@@ -3,8 +3,16 @@
   "version": "1.0.0",
   "main": "api/telegram-webhook.js",
   "type": "module",
+  "scripts": {
+    "start": "node api/telegram-webhook.js",
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
   "dependencies": {
-    "micro": "^9.3.4",
-    "node-telegram-bot-api": "^0.61.0"
+    "micro": "^10.0.1",
+    "node-telegram-bot-api": "^0.66.0"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
