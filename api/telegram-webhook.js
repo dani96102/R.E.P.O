@@ -1,6 +1,6 @@
 // api/telegram-webhook.js
 import { buffer } from 'micro';
-import TelegramBot from 'node-telegram-bot-api';
+import axios from 'axios';
 
 // غیرفعال کردن bodyParser پیش‌فرض
 export const config = {
@@ -13,20 +13,33 @@ if (!token) {
   throw new Error('BOT_TOKEN is required');
 }
 
-let bot;
-try {
-  bot = new TelegramBot(token, { polling: false });
-} catch (error) {
-  console.error('Failed to initialize TelegramBot:', error);
-  throw error;
+const TELEGRAM_API = `https://api.telegram.org/bot${token}`;
+
+// تابع برای ارسال پیام به جای bot.sendMessage
+async function sendMessage(chatId, text, replyMarkup) {
+  try {
+    const response = await axios.post(`${TELEGRAM_API}/sendMessage`, {
+      chat_id: chatId,
+      text: text,
+      reply_markup: replyMarkup
+    });
+    console.log('Message sent successfully:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error sending message with axios:', error.message);
+    console.error('Stack:', error.stack);
+    throw error;
+  }
 }
 
-// مدیریت دستور /start
-bot.onText(/\/start/, async (msg) => {
-  try {
-    console.log('Received /start command from chat:', msg.chat.id);
-    await bot.sendMessage(msg.chat.id, '🎮 بازی R.E.P.O آماده‌ست! روی دکمه کلیک کن 👇', {
-      reply_markup: {
+// تابع برای پردازش آپدیت‌ها
+async function processUpdate(update) {
+  if (update.message && update.message.text === '/start') {
+    const chatId = update.message.chat.id;
+    await sendMessage(
+      chatId,
+      '🎮 بازی R.E.P.O آماده‌ست! روی دکمه کلیک کن 👇',
+      {
         inline_keyboard: [[
           {
             text: '▶️ شروع بازی',
@@ -34,13 +47,9 @@ bot.onText(/\/start/, async (msg) => {
           }
         ]]
       }
-    });
-    console.log('Message sent to chat:', msg.chat.id);
-  } catch (error) {
-    console.error('Error sending message:', error.message);
-    console.error('Stack:', error.stack);
+    );
   }
-});
+}
 
 // هندلر اصلی
 export default async function handler(req, res) {
@@ -68,7 +77,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await bot.processUpdate(update);
+    await processUpdate(update);
     console.log('Update processed successfully');
   } catch (error) {
     console.error('Error processing update:', error.message);
