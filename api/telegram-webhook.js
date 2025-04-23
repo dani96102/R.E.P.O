@@ -2,7 +2,7 @@
 const { buffer } = require('micro');
 const TelegramBot = require('node-telegram-bot-api');
 
-// غیرفعال‌کردن bodyParser پیش‌فرض
+// غیرفعال کردن bodyParser پیش‌فرض
 module.exports.config = {
   api: { bodyParser: false }
 };
@@ -27,7 +27,6 @@ bot.onText(/\/start/, (msg) => {
 });
 
 module.exports = async (req, res) => {
-  // فقط POST بپذیر
   if (req.method !== 'POST') {
     return res.status(405).send('Method Not Allowed');
   }
