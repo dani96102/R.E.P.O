@@ -14,7 +14,7 @@ bot.onText(/\/start/, (msg) => {
       inline_keyboard: [[
         {
           text: "▶️ شروع بازی",
-          web_app: { url: "https://<https://r-e-p-o.vercel.app/>" }
+          web_app: { url: "https://https://r-e-p-o.vercel.app/" }
         }
       ]]
     }
