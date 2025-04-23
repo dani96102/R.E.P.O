@@ -1,9 +1,9 @@
 // api/telegram-webhook.js
-const { buffer } = require('micro');
-const TelegramBot = require('node-telegram-bot-api');
+import { buffer } from 'micro';
+import TelegramBot from 'node-telegram-bot-api';
 
 // غیرفعال کردن bodyParser پیش‌فرض
-module.exports.config = {
+export const config = {
   api: { bodyParser: false }
 };
 
@@ -35,26 +35,34 @@ bot.onText(/\/start/, async (msg) => {
         ]]
       }
     });
+    console.log('Message sent to chat:', msg.chat.id);
   } catch (error) {
     console.error('Error sending message:', error);
   }
 });
 
 // هندلر اصلی
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   console.log('Received webhook request:', req.method);
   if (req.method !== 'POST') {
     console.log('Invalid method:', req.method);
     return res.status(405).send('Method Not Allowed');
   }
 
-  const buf = await buffer(req);
+  let buf;
+  try {
+    buf = await buffer(req);
+  } catch (error) {
+    console.error('Error reading buffer:', error);
+    return res.status(500).send('Buffer Error');
+  }
+
   let update;
   try {
     update = JSON.parse(buf.toString());
     console.log('Parsed update:', update);
-  } catch (e) {
-    console.error('Invalid JSON:', e);
+  } catch (error) {
+    console.error('Invalid JSON:', error);
     return res.status(400).send('Invalid JSON');
   }
 
@@ -67,4 +75,4 @@ module.exports = async (req, res) => {
   }
 
   return res.status(200).send('OK');
-};
+}
