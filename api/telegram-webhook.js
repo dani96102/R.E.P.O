@@ -1,11 +1,16 @@
 // api/telegram-webhook.js
-import TelegramBot from 'node-telegram-bot-api';
-import { buffer } from 'micro';
+const { buffer } = require('micro');
+const TelegramBot = require('node-telegram-bot-api');
 
 // غیرفعال‌کردن bodyParser پیش‌فرض
-export const config = { api: { bodyParser: false } };
+module.exports.config = {
+  api: { bodyParser: false }
+};
 
 const token = process.env.BOT_TOKEN;
+if (!token) {
+  console.error('⚠️ BOT_TOKEN not set');
+}
 const bot = new TelegramBot(token);
 
 bot.onText(/\/start/, (msg) => {
@@ -14,16 +19,25 @@ bot.onText(/\/start/, (msg) => {
       inline_keyboard: [[
         {
           text: "▶️ شروع بازی",
-          web_app: { url: "https://https://r-e-p-o.vercel.app/" }
+          web_app: { url: "https://r-e-p-o.vercel.app" }
         }
       ]]
     }
   });
 });
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
+  // فقط POST بپذیر
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed');
+  }
   const buf = await buffer(req);
-  const update = JSON.parse(buf.toString());
+  let update;
+  try {
+    update = JSON.parse(buf.toString());
+  } catch (e) {
+    return res.status(400).send('Invalid JSON');
+  }
   await bot.processUpdate(update);
-  res.status(200).send('OK');
-}
+  return res.status(200).send('OK');
+};
