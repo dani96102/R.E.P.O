@@ -15,7 +15,7 @@ if (!token) {
 
 let bot;
 try {
-  bot = new TelegramBot(token);
+  bot = new TelegramBot(token, { polling: false });
 } catch (error) {
   console.error('Failed to initialize TelegramBot:', error);
   throw error;
@@ -37,7 +37,8 @@ bot.onText(/\/start/, async (msg) => {
     });
     console.log('Message sent to chat:', msg.chat.id);
   } catch (error) {
-    console.error('Error sending message:', error);
+    console.error('Error sending message:', error.message);
+    console.error('Stack:', error.stack);
   }
 });
 
@@ -70,7 +71,8 @@ export default async function handler(req, res) {
     await bot.processUpdate(update);
     console.log('Update processed successfully');
   } catch (error) {
-    console.error('Error processing update:', error);
+    console.error('Error processing update:', error.message);
+    console.error('Stack:', error.stack);
     return res.status(500).send('Internal Server Error');
   }
 
